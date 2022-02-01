@@ -1,0 +1,119 @@
+# Versão do arquivo yml
+
+# Serviços é uma das diferentes pasrtes da aplicação
+
+# diferentes partes da app: node, nginx, banco
+
+# service nginx vai ser construído a partir do docker file do nginx
+
+
+
+# contexto é por onde vai buscar a partir do .
+
+
+
+# nome da imagem --> raphael/nginx
+
+
+
+# nome do container_name 
+
+
+
+# port que vai ser utilizada para o service nginx
+
+
+
+# comunicação entre container pela network: 
+
+
+
+# crie a networks: passe o nome; driver: bridge; 
+
+# defina a network no service
+
+
+
+# quando utilizo o sinal - e coloco o nome abaixo do atributo
+
+# posso passar um array
+
+
+
+# mongo: não quero que construa uma imagem, mas utilize a imagem padrão
+
+
+
+# node: vão ser 3 serviços de node, com a mesma imagem mas com nome de container diferente
+
+
+
+# Ordem que os containers vão subir: primeiro o mongodb --> sobe os 3 node --> nginx load balance;
+
+# key: depends_on: "mongodb"; depends_on: - 'node-first' - 'node-second'
+
+
+version: '3'
+services:
+    nginx:
+        build:
+            dockerfile: ./docker/nginx.dockerfile
+            context: .
+        image: raphael/nginx
+        container_name: nginx
+        ports:
+            - "80:80"
+        networks: 
+            - production-network
+        depends_on: 
+            - "node1"
+            - "node2"
+            - "node3"
+
+    mongodb:
+        image: mongo
+        networks: 
+            - production-network
+
+    node1:
+        build:
+            dockerfile: ./docker/alura-books.dockerfile
+            context: .
+        image: raphael/alura-books
+        container_name: alura-books-1
+        ports:
+            - "3000"
+        networks: 
+            - production-network
+        depends_on:
+            - "mongodb"
+
+    node2:
+        build:
+            dockerfile: ./docker/alura-books.dockerfile
+            context: .
+        image: raphael/alura-books
+        container_name: alura-books-2
+        ports:
+            - "3000"
+        networks: 
+            - production-network
+        depends_on:
+            - "mongodb"
+
+    node3:
+        build:
+            dockerfile: ./docker/alura-books.dockerfile
+            context: .
+        image: raphael/alura-books
+        container_name: alura-books-3
+        ports:
+            - "3000"
+        networks: 
+            - production-network
+        depends_on:
+            - "mongodb"
+
+networks: 
+    production-network:
+        driver: bridge
